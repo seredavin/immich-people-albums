@@ -56,6 +56,21 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
+    - name: Make package public
+      run: |
+        # Делаем пакет публичным через GitHub API
+        curl -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/user/packages/container/immich-people-albums" \
+          -d '{"visibility":"public"}' || \
+        curl -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/immich-people-albums" \
+          -d '{"visibility":"public"}'
+      continue-on-error: true
+    
     - name: Verify image in registry
       run: |
         echo "Verifying image availability..."

@@ -1,0 +1,52 @@
+name: Make Package Public
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [make-public]
+
+# Этот workflow делает пакет публичным в GitHub Container Registry
+# Можно запустить вручную или автоматически после публикации
+
+jobs:
+  make-public:
+    name: Make package public
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Make package public (user)
+      run: |
+        echo "Making package public for user account..."
+        curl -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/user/packages/container/immich-people-albums" \
+          -d '{"visibility":"public"}' || echo "User package update failed, trying org..."
+      continue-on-error: true
+    
+    - name: Make package public (organization)
+      run: |
+        echo "Making package public for organization..."
+        curl -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/immich-people-albums" \
+          -d '{"visibility":"public"}' || echo "Organization package update failed"
+      continue-on-error: true
+    
+    - name: Verify package visibility
+      run: |
+        echo "Checking package visibility..."
+        curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/user/packages/container/immich-people-albums" \
+          | jq -r '.visibility // "unknown"' || \
+        curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/immich-people-albums" \
+          | jq -r '.visibility // "unknown"'
+
