@@ -9,6 +9,7 @@ import sys
 import logging
 import yaml
 import requests
+from requests.exceptions import HTTPError
 from typing import List, Dict, Optional
 
 # Настройка логирования
@@ -62,15 +63,35 @@ class ImmichClient:
     def get_all_people(self, with_hidden: bool = False) -> List[Dict]:
         """Получить список всех людей"""
         try:
+            # Формируем параметры запроса
+            # Не передаем withHidden если он False, чтобы избежать проблем с некоторыми версиями API
+            params = {"size": 1000}
+            if with_hidden:
+                params["withHidden"] = True  # Передаем как boolean, requests преобразует правильно
+            
+            logger.debug(f"Запрос к {self.api_url}/people с параметрами: {params}")
             response = self.session.get(
                 f"{self.api_url}/people",
-                params={"withHidden": with_hidden, "size": 1000}
+                params=params
             )
             response.raise_for_status()
             data = response.json()
             return data.get('people', [])
+        except requests.exceptions.HTTPError as e:
+            # Логируем детали ошибки для отладки
+            if e.response is not None:
+                try:
+                    error_detail = e.response.json()
+                    logger.error(f"Ошибка получения списка людей (HTTP {e.response.status_code}): {error_detail}")
+                except:
+                    logger.error(f"Ошибка получения списка людей (HTTP {e.response.status_code}): {e.response.text}")
+                # Логируем URL для отладки
+                logger.debug(f"Запрос был к: {e.response.url}")
+            else:
+                logger.error(f"Ошибка получения списка людей: {e}")
+            return []
         except Exception as e:
-            logger.error(f"Ошибка получения списка людей: {e}")
+            logger.error(f"Ошибка получения списка людей: {e}", exc_info=True)
             return []
     
     def find_person_by_name(self, name: str) -> Optional[Dict]:
