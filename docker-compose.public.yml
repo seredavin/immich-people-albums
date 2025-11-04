@@ -1,9 +1,7 @@
-version: '3.8'
-
-# Docker Compose для использования готового образа из GitHub Container Registry
-# Не требует сборки образа локально - использует опубликованный образ
-
 services:
+  # Docker Compose для использования готового образа из GitHub Container Registry
+  # Не требует сборки образа локально - использует опубликованный образ
+
   immich-people-albums:
     # Используем готовый образ из GitHub Container Registry
     image: ghcr.io/seredavin/immich-people-albums:latest
@@ -15,7 +13,7 @@ services:
     
     volumes:
       # Монтируем конфигурацию
-      - ./config.yaml:/config/config.yaml:ro
+      - ./config.yaml:/config/config.yaml
       # Монтируем логи (опционально)
       - ./logs:/app/logs
     
@@ -43,4 +41,3 @@ networks:
     external: true  # Используйте существующую сеть Immich
     # Или создайте новую:
     # external: false
-

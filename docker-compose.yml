@@ -1,13 +1,10 @@
-version: '3.8'
-
 services:
   immich-people-albums:
     build: .
     container_name: immich-people-albums
     restart: unless-stopped
     volumes:
-      # Монтируем конфигурацию
-      - ./config.yaml:/config/config.yaml:ro
+      - ./config.yaml:/config/config.yaml
       # Монтируем логи (опционально)
       - ./logs:/app/logs
     environment:
