@@ -106,10 +106,12 @@ jobs:
         tags: immich-people-albums:test
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        load: true
     
     - name: Test Docker image
       run: |
         docker run --rm immich-people-albums:test python --version
+        docker run --rm immich-people-albums:test python -c "import requests; import yaml; print('Dependencies OK')"
 
   security:
     name: Security scan
