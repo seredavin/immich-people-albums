@@ -18,15 +18,15 @@ services:
       # Расписание для cron (только если RUN_MODE=cron)
       # Формат: "0 2 * * *" (каждый день в 2:00)
       - CRON_SCHEDULE=${CRON_SCHEDULE:-0 2 * * *}
-    networks:
-      - immich-network  # Используйте сеть вашего Immich, если он в Docker
+    # networks:
+    #   - immich-network  # Используйте сеть вашего Immich, если он в Docker
     # Если RUN_MODE=cron, контейнер будет запускать скрипт по расписанию
     # Если RUN_MODE=once, контейнер запустит скрипт один раз и завершится
     # Если RUN_MODE не указан, поведение по умолчанию - один раз
 
-networks:
-  immich-network:
-    external: true  # Используйте существующую сеть Immich
-    # Или создайте новую:
-    # external: false
+# networks:
+#   immich-network:
+#     external: true  # Используйте существующую сеть Immich
+#     # Или создайте новую:
+#     # external: false
 
