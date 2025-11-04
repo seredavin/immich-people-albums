@@ -43,13 +43,13 @@ jobs:
         echo "📥 Pulling image..."
         docker pull $IMAGE
         
-        # Проверяем версию Python
+        # Проверяем версию Python (переопределяем entrypoint для тестов)
         echo "🐍 Checking Python version..."
-        docker run --rm $IMAGE python --version
+        docker run --rm --entrypoint python $IMAGE --version
         
         # Проверяем зависимости
         echo "📦 Checking dependencies..."
-        docker run --rm $IMAGE python -c "import requests; import yaml; print('✅ All dependencies OK')"
+        docker run --rm --entrypoint python $IMAGE -c "import requests; import yaml; print('✅ All dependencies OK')"
         
         # Проверяем размер образа
         echo "📊 Image size:"
@@ -57,7 +57,10 @@ jobs:
         
         # Проверяем, что main.py доступен
         echo "📄 Checking main.py..."
-        docker run --rm $IMAGE ls -la /app/main.py
+        docker run --rm --entrypoint test $IMAGE -f /app/main.py && echo "✅ main.py found"
+        
+        # Проверяем, что entrypoint скрипт доступен (если есть)
+        docker run --rm --entrypoint test $IMAGE -f /docker-entrypoint.sh && echo "✅ entrypoint script found" || echo "ℹ️  No entrypoint script (using default CMD)"
         
         echo "✅ Image verification completed successfully!"
     

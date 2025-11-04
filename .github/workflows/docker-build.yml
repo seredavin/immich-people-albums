@@ -31,6 +31,12 @@ jobs:
     
     - name: Test Docker image
       run: |
-        docker run --rm immich-people-albums:latest python --version
-        docker run --rm immich-people-albums:latest python -c "import requests; import yaml; print('Dependencies OK')"
+        echo "Testing Docker image..."
+        # Проверяем версию Python (переопределяем entrypoint)
+        docker run --rm --entrypoint python immich-people-albums:latest --version
+        # Проверяем зависимости
+        docker run --rm --entrypoint python immich-people-albums:latest -c "import requests; import yaml; print('✅ Dependencies OK')"
+        # Проверяем, что main.py доступен
+        docker run --rm --entrypoint test immich-people-albums:latest -f /app/main.py && echo "✅ main.py found"
+        echo "✅ Docker image test passed"
 
