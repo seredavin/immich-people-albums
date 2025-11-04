@@ -1,15 +1,24 @@
 version: '3.8'
 
+# Docker Compose для использования готового образа из GitHub Container Registry
+# Не требует сборки образа локально - использует опубликованный образ
+
 services:
   immich-people-albums:
-    build: .
+    # Используем готовый образ из GitHub Container Registry
+    image: ghcr.io/seredavin/immich-people-albums:latest
+    # Или используйте конкретную версию:
+    # image: ghcr.io/seredavin/immich-people-albums:v1.0.0
+    
     container_name: immich-people-albums
     restart: unless-stopped
+    
     volumes:
       # Монтируем конфигурацию
       - ./config.yaml:/config/config.yaml:ro
       # Монтируем логи (опционально)
       - ./logs:/app/logs
+    
     environment:
       - CONFIG_PATH=/config/config.yaml
       # Если Immich на том же хосте, можно использовать host.docker.internal
@@ -21,8 +30,10 @@ services:
       # Расписание для cron (только если RUN_MODE=cron)
       # Формат: "0 2 * * *" (каждый день в 2:00)
       - CRON_SCHEDULE=${CRON_SCHEDULE:-0 2 * * *}
+    
     networks:
       - immich-network  # Используйте сеть вашего Immich, если он в Docker
+    
     # Если RUN_MODE=cron, контейнер будет запускать скрипт по расписанию
     # Если RUN_MODE=once, контейнер запустит скрипт один раз и завершится
     # Если RUN_MODE не указан, поведение по умолчанию - один раз

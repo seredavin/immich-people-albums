@@ -1,6 +1,6 @@
 # Immich People Albums Sync
 
-[![CI](https://github.com/kirillseredavin/immich-people-albums/actions/workflows/ci.yml/badge.svg)](https://github.com/kirillseredavin/immich-people-albums/actions/workflows/ci.yml)
+[![CI](https://github.com/seredavin/immich-people-albums/actions/workflows/ci.yml/badge.svg)](https://github.com/seredavin/immich-people-albums/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -65,6 +65,17 @@ mappings:
 
 #### Вариант A: Через Docker Compose (рекомендуется)
 
+**Использование готового образа из registry (рекомендуется):**
+
+1. Убедитесь, что сеть настроена правильно
+2. Запустите:
+
+```bash
+docker-compose -f docker-compose.public.yml up -d
+```
+
+**Или сборка образа локально:**
+
 1. Убедитесь, что `docker-compose.yml` настроен правильно
 2. Обновите сеть в `docker-compose.yml`, если Immich использует другую сеть
 3. Запустите:
@@ -73,7 +84,22 @@ mappings:
 docker-compose up -d
 ```
 
-#### Вариант B: Сборка и запуск Docker образа
+#### Вариант B: Использование готового образа из registry
+
+```bash
+# Загрузите образ из GitHub Container Registry
+docker pull ghcr.io/seredavin/immich-people-albums:latest
+
+# Запуск контейнера
+docker run --rm \
+  -v $(pwd)/config.yaml:/config/config.yaml:ro \
+  -v $(pwd)/logs:/app/logs \
+  --network immich-network \
+  -e RUN_MODE=once \
+  ghcr.io/seredavin/immich-people-albums:latest
+```
+
+#### Вариант C: Сборка образа локально
 
 ```bash
 # Сборка образа
@@ -84,10 +110,11 @@ docker run --rm \
   -v $(pwd)/config.yaml:/config/config.yaml:ro \
   -v $(pwd)/logs:/app/logs \
   --network immich-network \
+  -e RUN_MODE=once \
   immich-people-albums
 ```
 
-#### Вариант C: Локальный запуск (без Docker)
+#### Вариант D: Локальный запуск (без Docker)
 
 ```bash
 # Установка зависимостей
@@ -276,69 +303,19 @@ git push origin v1.0.0
 
 После создания тега, GitHub Actions автоматически:
 - Соберет Docker образ
-- Опубликует его в `ghcr.io/USERNAME/immich-people-albums`
+- Опубликует его в `ghcr.io/seredavin/immich-people-albums`
 - Сделает образ **публичным** (доступным для всех без авторизации)
 - Проверит доступность образа в registry
-- Создаст GitHub Release
+- Создаст GitHub Release со ссылками на образ и инструкциями по использованию
 
 > **Примечание:** Образы публикуются как публичные, поэтому их можно использовать без авторизации:
 > ```bash
-> docker pull ghcr.io/USERNAME/immich-people-albums:latest
+> docker pull ghcr.io/seredavin/immich-people-albums:latest
 > ```
-
-### Проверка образа в registry:
-
-#### Через GitHub UI:
-1. Перейдите в ваш репозиторий на GitHub
-2. Нажмите на "Packages" справа (или перейдите по ссылке `https://github.com/USERNAME?tab=packages`)
-3. Найдите пакет `immich-people-albums`
-4. Там будут видны все опубликованные теги и версии
-
-#### Через командную строку:
-
-```bash
-# Войдите в GitHub Container Registry
-echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
-
-# Загрузите образ
-docker pull ghcr.io/USERNAME/immich-people-albums:latest
-
-# Проверьте, что образ работает
-docker run --rm ghcr.io/USERNAME/immich-people-albums:latest python --version
-
-# Проверьте зависимости
-docker run --rm ghcr.io/USERNAME/immich-people-albums:latest python -c "import requests; import yaml; print('OK')"
-```
-
-Или используйте готовый скрипт:
-```bash
-# Установите токен (опционально, для полной проверки)
-export GITHUB_TOKEN=your_token
-export GITHUB_REPOSITORY_OWNER=your_username
-
-# Запустите скрипт проверки
-./scripts/verify-registry.sh latest
-# или для конкретной версии
-./scripts/verify-registry.sh v1.0.0
-```
-
-#### Через GitHub Actions:
-Можно использовать workflow `Verify Docker Image` (`.github/workflows/verify-image.yml`):
-- Перейдите в Actions → "Verify Docker Image" → "Run workflow"
-- Укажите тег для проверки (например, `latest` или `v1.0.0`)
-- Workflow проверит доступность образа и его работоспособность
-
-#### Проверка через API:
-
-```bash
-# Получить список всех тегов
-curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-  https://ghcr.io/v2/USERNAME/immich-people-albums/tags/list | jq
-
-# Проверить конкретный тег
-curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-  https://ghcr.io/v2/USERNAME/immich-people-albums/manifests/latest
-```
+> 
+> **Для использования готового образа:**
+> - Используйте `docker-compose.public.yml` вместо `docker-compose.yml`
+> - Или укажите образ напрямую: `ghcr.io/seredavin/immich-people-albums:latest`
 
 ## Лицензия
 

@@ -143,4 +143,26 @@ jobs:
         draft: false
         prerelease: false
         generate_release_notes: true
+        body: |
+          ## Docker Image
+          
+          📦 **Image:** `ghcr.io/${{ github.repository_owner }}/immich-people-albums:${{ steps.version.outputs.VERSION }}`
+          
+          ### Quick Start
+          
+          ```bash
+          # Pull the image
+          docker pull ghcr.io/${{ github.repository_owner }}/immich-people-albums:${{ steps.version.outputs.VERSION }}
+          
+          # Or use the latest tag
+          docker pull ghcr.io/${{ github.repository_owner }}/immich-people-albums:latest
+          ```
+          
+          ### Docker Compose
+          
+          See `docker-compose.public.yml` for an example using the published image.
+          
+          ---
+          
+          ${{ github.event.release.body }}
 

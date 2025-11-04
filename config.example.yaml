@@ -16,14 +16,20 @@ immich:
   # email: "your-email@example.com"
   # password: "your-password"
 
-# Расписание запуска в формате cron (для справки, используется внешним cron)
-# Примеры:
+# Соответствие между людьми (person) и альбомами
+# 
+# Примечание о расписании:
+# Расписание запуска настраивается НЕ в этом файле, а через:
+#   - Docker: переменная окружения CRON_SCHEDULE в docker-compose.yml
+#     Пример: CRON_SCHEDULE="0 2 * * *" (каждый день в 2:00)
+#   - Внешний cron: настройте crontab на хосте
+#     Пример: 0 2 * * * docker run --rm -v /path/to/config.yaml:/config/config.yaml:ro immich-people-albums
+#   - Systemd timer: настройте timer в systemd
+# 
+# Примеры расписания cron:
 #   "0 2 * * *" - каждый день в 2:00 ночи
 #   "0 */6 * * *" - каждые 6 часов
 #   "0 0 * * 0" - каждое воскресенье в полночь
-schedule: "0 2 * * *"
-
-# Соответствие между людьми (person) и альбомами
 mappings:
   - person_name: "Иван Иванов"           # Имя человека в Immich
     person_id: null                        # UUID человека (опционально, если известен)
