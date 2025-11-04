@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  immich-people-albums:
+    build: .
+    container_name: immich-people-albums
+    restart: unless-stopped
+    volumes:
+      # Монтируем конфигурацию
+      - ./config.yaml:/config/config.yaml:ro
+      # Монтируем логи (опционально)
+      - ./logs:/app/logs
+    environment:
+      - CONFIG_PATH=/config/config.yaml
+      # Если Immich на том же хосте, можно использовать host.docker.internal
+      # или имя сервиса из docker-compose Immich
+      - TZ=Europe/Moscow  # Установите свой часовой пояс
+    networks:
+      - immich-network  # Используйте сеть вашего Immich, если он в Docker
+    # Если используете cron для расписания, можно добавить:
+    # depends_on:
+    #   - cron
+    # Или запускать вручную через cron на хосте
+
+  # Альтернатива: сервис с cron для автоматического запуска по расписанию
+  immich-people-albums-cron:
+    build: .
+    container_name: immich-people-albums-cron
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+      - ./logs:/app/logs
+    environment:
+      - CONFIG_PATH=/config/config.yaml
+      - TZ=Europe/Moscow
+    command: >
+      sh -c "
+      # Устанавливаем cron
+      apt-get update && apt-get install -y cron &&
+      # Создаем cron задачу из конфига
+      echo '$${CRON_SCHEDULE:-0 2 * * *} python /app/main.py' > /etc/cron.d/immich-sync &&
+      chmod 0644 /etc/cron.d/immich-sync &&
+      crontab /etc/cron.d/immich-sync &&
+      # Запускаем cron
+      cron -f
+      "
+    networks:
+      - immich-network
+
+networks:
+  immich-network:
+    external: true  # Используйте существующую сеть Immich
+    # Или создайте новую:
+    # external: false
+
