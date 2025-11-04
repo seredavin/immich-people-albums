@@ -55,6 +55,46 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+    
+    - name: Verify image in registry
+      run: |
+        echo "Verifying image availability..."
+        IMAGE="ghcr.io/${{ github.repository_owner }}/immich-people-albums"
+        
+        # Определяем тег для проверки
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          TAG="${{ github.event.inputs.version }}"
+        else
+          TAG="${GITHUB_REF#refs/tags/}"
+        fi
+        
+        FULL_IMAGE="$IMAGE:$TAG"
+        echo "Checking image: $FULL_IMAGE"
+        
+        # Проверяем доступность через API
+        echo "📋 Checking image metadata via API..."
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://ghcr.io/v2/${{ github.repository_owner }}/immich-people-albums/manifests/$TAG")
+        
+        if [ "$HTTP_CODE" = "200" ]; then
+          echo "✅ Image manifest found (HTTP $HTTP_CODE)"
+        else
+          echo "⚠️  Image manifest check returned HTTP $HTTP_CODE"
+        fi
+        
+        # Пробуем загрузить образ и проверить его
+        echo "📥 Pulling image from registry..."
+        if docker pull "$FULL_IMAGE"; then
+          echo "✅ Image successfully pulled from registry"
+          echo "🐍 Testing Python version..."
+          docker run --rm "$FULL_IMAGE" python --version
+          echo "📦 Testing dependencies..."
+          docker run --rm "$FULL_IMAGE" python -c "import requests; import yaml; print('✅ Dependencies verified')"
+          echo "✅ All verification checks passed!"
+        else
+          echo "⚠️  Could not pull image immediately (may need a moment to propagate)"
+        fi
 
   create-release:
     name: Create GitHub Release

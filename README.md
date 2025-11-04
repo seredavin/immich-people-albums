@@ -277,7 +277,62 @@ git push origin v1.0.0
 После создания тега, GitHub Actions автоматически:
 - Соберет Docker образ
 - Опубликует его в `ghcr.io/USERNAME/immich-people-albums`
+- Проверит доступность образа в registry
 - Создаст GitHub Release
+
+### Проверка образа в registry:
+
+#### Через GitHub UI:
+1. Перейдите в ваш репозиторий на GitHub
+2. Нажмите на "Packages" справа (или перейдите по ссылке `https://github.com/USERNAME?tab=packages`)
+3. Найдите пакет `immich-people-albums`
+4. Там будут видны все опубликованные теги и версии
+
+#### Через командную строку:
+
+```bash
+# Войдите в GitHub Container Registry
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+
+# Загрузите образ
+docker pull ghcr.io/USERNAME/immich-people-albums:latest
+
+# Проверьте, что образ работает
+docker run --rm ghcr.io/USERNAME/immich-people-albums:latest python --version
+
+# Проверьте зависимости
+docker run --rm ghcr.io/USERNAME/immich-people-albums:latest python -c "import requests; import yaml; print('OK')"
+```
+
+Или используйте готовый скрипт:
+```bash
+# Установите токен (опционально, для полной проверки)
+export GITHUB_TOKEN=your_token
+export GITHUB_REPOSITORY_OWNER=your_username
+
+# Запустите скрипт проверки
+./scripts/verify-registry.sh latest
+# или для конкретной версии
+./scripts/verify-registry.sh v1.0.0
+```
+
+#### Через GitHub Actions:
+Можно использовать workflow `Verify Docker Image` (`.github/workflows/verify-image.yml`):
+- Перейдите в Actions → "Verify Docker Image" → "Run workflow"
+- Укажите тег для проверки (например, `latest` или `v1.0.0`)
+- Workflow проверит доступность образа и его работоспособность
+
+#### Проверка через API:
+
+```bash
+# Получить список всех тегов
+curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+  https://ghcr.io/v2/USERNAME/immich-people-albums/tags/list | jq
+
+# Проверить конкретный тег
+curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+  https://ghcr.io/v2/USERNAME/immich-people-albums/manifests/latest
+```
 
 ## Лицензия
 
