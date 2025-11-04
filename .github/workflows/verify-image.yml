@@ -1,0 +1,70 @@
+name: Verify Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to verify (e.g., latest, v1.0.0)'
+        required: true
+        default: 'latest'
+        type: string
+
+jobs:
+  verify:
+    name: Verify Docker image in registry
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Verify image exists and works
+      run: |
+        IMAGE="ghcr.io/${{ github.repository_owner }}/immich-people-albums:${{ inputs.image_tag }}"
+        echo "Verifying image: $IMAGE"
+        
+        # Проверяем доступность через API
+        echo "📋 Checking image metadata..."
+        curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://ghcr.io/v2/${{ github.repository_owner }}/immich-people-albums/manifests/${{ inputs.image_tag }}" \
+          -o /dev/null -w "HTTP Status: %{http_code}\n"
+        
+        # Загружаем образ
+        echo "📥 Pulling image..."
+        docker pull $IMAGE
+        
+        # Проверяем версию Python
+        echo "🐍 Checking Python version..."
+        docker run --rm $IMAGE python --version
+        
+        # Проверяем зависимости
+        echo "📦 Checking dependencies..."
+        docker run --rm $IMAGE python -c "import requests; import yaml; print('✅ All dependencies OK')"
+        
+        # Проверяем размер образа
+        echo "📊 Image size:"
+        docker images $IMAGE --format "{{.Size}}"
+        
+        # Проверяем, что main.py доступен
+        echo "📄 Checking main.py..."
+        docker run --rm $IMAGE ls -la /app/main.py
+        
+        echo "✅ Image verification completed successfully!"
+    
+    - name: List all available tags
+      run: |
+        echo "📋 Available tags in registry:"
+        curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://ghcr.io/v2/${{ github.repository_owner }}/immich-people-albums/tags/list" \
+          | jq -r '.tags[]' | head -20
+

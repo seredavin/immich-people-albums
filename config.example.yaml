@@ -1,0 +1,49 @@
+# Пример конфигурации для Immich People Albums
+# Скопируйте этот файл в config.yaml и заполните своими данными
+
+immich:
+  # URL вашего сервера Immich (без /api)
+  # Для Docker: используйте имя сервиса (например, immich-server)
+  # Для локального доступа из контейнера: host.docker.internal:3001
+  # Для внешнего сервера: https://immich.example.com
+  url: "http://immich-server:3001"
+  
+  # API ключ для аутентификации (предпочтительно)
+  # Получить можно в Immich: Settings → API Keys
+  api_key: "YOUR_API_KEY_HERE"
+  
+  # Альтернатива: email и password (если не используете API ключ)
+  # email: "your-email@example.com"
+  # password: "your-password"
+
+# Расписание запуска в формате cron (для справки, используется внешним cron)
+# Примеры:
+#   "0 2 * * *" - каждый день в 2:00 ночи
+#   "0 */6 * * *" - каждые 6 часов
+#   "0 0 * * 0" - каждое воскресенье в полночь
+schedule: "0 2 * * *"
+
+# Соответствие между людьми (person) и альбомами
+mappings:
+  - person_name: "Иван Иванов"           # Имя человека в Immich
+    person_id: null                        # UUID человека (опционально, если известен)
+    album_name: "Альбом Ивана"            # Название альбома
+    album_id: null                         # UUID альбома (опционально, если известен)
+  
+  - person_name: "Мария Петрова"
+    person_id: null
+    album_name: "Фото с Марией"
+    album_id: null
+
+# Дополнительные настройки
+options:
+  # Добавлять только новые активы (не добавлять уже существующие в альбоме)
+  skip_existing: true
+  
+  # Максимальное количество активов для обработки за один запуск
+  # 0 = без ограничений
+  max_assets_per_run: 0
+  
+  # Уровень логирования: DEBUG, INFO, WARNING, ERROR
+  log_level: "INFO"
+
