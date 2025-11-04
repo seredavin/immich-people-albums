@@ -277,8 +277,14 @@ git push origin v1.0.0
 После создания тега, GitHub Actions автоматически:
 - Соберет Docker образ
 - Опубликует его в `ghcr.io/USERNAME/immich-people-albums`
+- Сделает образ **публичным** (доступным для всех без авторизации)
 - Проверит доступность образа в registry
 - Создаст GitHub Release
+
+> **Примечание:** Образы публикуются как публичные, поэтому их можно использовать без авторизации:
+> ```bash
+> docker pull ghcr.io/USERNAME/immich-people-albums:latest
+> ```
 
 ### Проверка образа в registry:
 
