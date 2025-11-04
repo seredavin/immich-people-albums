@@ -10,7 +10,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Параметры
-REPO_OWNER="${GITHUB_REPOSITORY_OWNER:-kirillseredavin}"
+REPO_OWNER="${GITHUB_REPOSITORY_OWNER:-seredavin}"
 IMAGE_NAME="immich-people-albums"
 TAG="${1:-latest}"
 FULL_IMAGE="ghcr.io/${REPO_OWNER}/${IMAGE_NAME}:${TAG}"

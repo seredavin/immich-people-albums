@@ -103,9 +103,11 @@ jobs:
         if docker pull "$FULL_IMAGE"; then
           echo "✅ Image successfully pulled from registry"
           echo "🐍 Testing Python version..."
-          docker run --rm "$FULL_IMAGE" python --version
+          docker run --rm --entrypoint python "$FULL_IMAGE" --version
           echo "📦 Testing dependencies..."
-          docker run --rm "$FULL_IMAGE" python -c "import requests; import yaml; print('✅ Dependencies verified')"
+          docker run --rm --entrypoint python "$FULL_IMAGE" -c "import requests; import yaml; print('✅ Dependencies verified')"
+          echo "📄 Checking main.py..."
+          docker run --rm --entrypoint test "$FULL_IMAGE" -f /app/main.py && echo "✅ main.py found"
           echo "✅ All verification checks passed!"
         else
           echo "⚠️  Could not pull image immediately (may need a moment to propagate)"
@@ -143,4 +145,26 @@ jobs:
         draft: false
         prerelease: false
         generate_release_notes: true
+        body: |
+          ## Docker Image
+          
+          📦 **Image:** `ghcr.io/${{ github.repository_owner }}/immich-people-albums:${{ steps.version.outputs.VERSION }}`
+          
+          ### Quick Start
+          
+          ```bash
+          # Pull the image
+          docker pull ghcr.io/${{ github.repository_owner }}/immich-people-albums:${{ steps.version.outputs.VERSION }}
+          
+          # Or use the latest tag
+          docker pull ghcr.io/${{ github.repository_owner }}/immich-people-albums:latest
+          ```
+          
+          ### Docker Compose
+          
+          See `docker-compose.public.yml` for an example using the published image.
+          
+          ---
+          
+          ${{ github.event.release.body }}
 

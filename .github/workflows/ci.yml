@@ -110,8 +110,14 @@ jobs:
     
     - name: Test Docker image
       run: |
-        docker run --rm immich-people-albums:test python --version
-        docker run --rm immich-people-albums:test python -c "import requests; import yaml; print('Dependencies OK')"
+        echo "Testing Docker image..."
+        # Проверяем версию Python (переопределяем entrypoint)
+        docker run --rm --entrypoint python immich-people-albums:test --version
+        # Проверяем зависимости
+        docker run --rm --entrypoint python immich-people-albums:test -c "import requests; import yaml; print('✅ Dependencies OK')"
+        # Проверяем, что main.py доступен
+        docker run --rm --entrypoint test immich-people-albums:test -f /app/main.py && echo "✅ main.py found"
+        echo "✅ Docker image test passed"
 
   security:
     name: Security scan
