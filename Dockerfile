@@ -7,6 +7,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends cron && \
     rm -rf /var/lib/apt/lists/*
 
+# Создаем симлинк python -> python3 для совместимости с cron
+RUN ln -s /usr/local/bin/python3 /usr/local/bin/python || true
+
 # Устанавливаем зависимости
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
